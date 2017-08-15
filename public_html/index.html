@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>--------</title>
+  <meta name="generator" content="Haroopad 0.13.1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/css/base/jquery.ui.all.css" rel="stylesheet">
+  <link href="index.css" rel="stylesheet">
+  <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script>
+</head>
+<script type="text/javascript">
+
+var imageNr = 0; // Serial number of current image
+var finished = new Array(); // References to img objects which have finished downloading
+var paused = false;
+var ws; // Web Socket
+var g_Operation; // 操作種別
+var g_SliderMode = false; // スライダーのモード: True -> スライダー / False ->プロポ
+
+const strSvrPort="10502";
+
+// MJPG Streamer より。
+function createImageLayer() {
+    var img = new Image();
+    img.style.position = "absolute";
+    img.style.zIndex = -1;
+    img.onload = imageOnload;
+    img.onclick = imageOnclick;
+    img.src = "http://"+location.host+":8080/?action=snapshot&n=" + (++imageNr);
+    var webcam = document.getElementById("webcam");
+    webcam.insertBefore(img, webcam.firstChild);
+}
+
+// MJPG Streamer より
+// Two layers are always present (except at the very beginning), to avoid flicker
+function imageOnload() {
+    this.style.zIndex = imageNr; // Image finished, bring to front!
+    while (1 < finished.length) {
+        var del = finished.shift(); // Delete old image(s) from document
+        del.parentNode.removeChild(del);
+    }
+    finished.push(this);
+    if (!paused) createImageLayer();
+}
+
+// MJPG Streamer より
+function imageOnclick() { // Clicking on the image will pause the stream
+    paused = !paused;
+    if (!paused) createImageLayer();
+}
+
+// Onload
+function km_Onload() {
+    document.title = "Pla-rail : "+location.host;
+    //createImageLayer();
+}
+
+
+</script>
+<body onload="km_Onload();">
+    <div class="container">
+      <script type="text/javascript">
+	//スライダーハンドラ
+	//手を離したら止まる。
+	//他者の
+	function slider_onchange(event,ui) {
+	    if (g_OpType == 'acknowledged') {
+			if (ui.value != 0) {
+				send_message(0,'change');
+				console.log("resetting...");
+			}
+		}
+	};
+
+	//スライド中に制御
+	function slider_onslide(event,ui) {
+		send_message(ui.value,'change');
+	    console.log("sent message.value:"+ui.value);
+	};
+
+	//スライダー生成
+	$(function() {
+	    $( "#slider" ).slider({
+			change: slider_onchange,
+			slide: slider_onslide,
+			orientation: 'vertical',
+			// Max と Min 追加
+			max: 100,
+			min: -50
+	    });
+	});
+	
+	//チェックボックスイベント処理
+	$(function() {
+		$( '#toggleLight' ).change(function(){
+			if ($(this).is(':checked')) {
+				console.log("#toggleLight checked");
+				send_message(1,'light');
+			} else {
+				console.log("#toggleLight unchecked");
+				send_message(0,'light');
+			}
+
+		}); // $( '#toggleLight' ).on('change', $(
+		$( '#toggleSlider' ).change(function(){
+			if ($(this).is(':checked')) {
+				console.log("#toggleSlider checked");
+				send_message(1,'mode');
+			} else {
+				console.log("#toggleSlider unchecked");
+				send_message(0,'mode');
+			}
+		}); // $( '#toggleSlider' ).on('change', $(
+	});
+
+	//Slider チェックボックス生成&イベント処理
+
+	// Web ソケット接続
+	if(undefined == ws) {
+	    ws = new WebSocket('ws://'+location.host+':'+strSvrPort+'/');
+	}
+
+	// メッセージ受信イベントを処理
+	ws.onmessage = function(event) {
+	    // 受信したメッセージを復元
+	    var data = JSON.parse(event.data);
+	    // 表示の更新
+	    update_info(data);
+	    g_OpType = data.type;
+	    if ((g_OpType == 'change') || (g_OpType == 'acknowledged')) {
+			// メモ：ここでSliderの値を設定しても、イベントハンドラは動かないので、ループしない。
+			$( "#slider" ).slider('value',data.value);
+	    }
+	    else if (g_OpType == 'accepted') {
+			// 特に何もしない。
+			// 場合によってはデバイスでサウンド再生しても良いかも。
+			console.log("conected!!")
+	    }
+	    else if (g_OpType == 'light') {
+	    	// ライト点灯もしくは消灯
+	    	$(' #toggleLight ').prop("checked",(data.value != 0));
+	    }
+	    else if (g_OpType == 'mode') {
+	    	// スライダーモード設定 0:プロポ、1:スライダー
+	    	g_SliderMode = (data.value != 0);
+	    	$(' #toggleSlider ').prop("checked",g_SliderMode );
+	    }
+		// console debugging...
+	    console.log("received data: data.type:" +data.type);
+	    console.log("received data: data.value:" +data.value);
+	    console.log("received data: data.remote_address:" +data.remote_address);
+	}; // ws.onmessage
+
+	// クライアントからのデータ送信（スライダーなどのイベント内で使用）
+	function send_message(msg,type) {
+	    ws.send(
+	    JSON.stringify({
+			type: type,
+			value: msg,
+		})
+	    );
+	    console.log("sent data: msg:" +msg);
+	};
+
+	function update_info(data) {
+		str = 
+			'<ul>' +
+				'<li>'+'Operation: '+data.type+'</li>' +
+				'<li>'+'Value: '+ data.value+'</li>' +
+			'</ul>'   	
+		$('#slidervaluesvr').html(str);
+	}
+
+
+      </script>
+      <div id="km-slider">
+        <div id="slider"></div>
+      </div>
+      <div id="main">
+        <div id="console">
+          <div id="webcam">
+            <script language="JavaScript">
+                document.write('<img src="' + location.protocol + '//' + location.hostname + ':8080/stream/video.mjpeg"/' );
+            </script>
+          </div>
+          <div id="switch_panel">
+          	<input id="toggleLight" type="checkbox" value="0"> LIGHT </input></br>
+          	<input id="toggleSlider" type="checkbox" value="0"> Slider Mode </input>
+          </div>
+          <div id="slidervaluesvr"/><br/>
+        </div>
+      </div> <!-- End console -->
+    </div><!-- End main -->
+</body>
+
+</html>
