@@ -205,8 +205,11 @@ WebSocket サーバーとして動作し、ブラウザ上で双方向リアル�
     **** 表示された内容の最後に以下を記し保存します。****  
 
     # Run wsock_svr.py at boot time
-    @reboot python3 /opt/pla-rail/wsock_svr.py &
+    @reboot python3 /opt/pla-rail/wsock_svr.py &  
+
+    **** 保存後 Root 状態から出ます。****  
     # exit  
+    $
 
 # テスト
 一度 OS を再起動し、しばらくしてからブラウザで "http://(IP Address)/~pi/" を開きます。
