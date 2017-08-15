@@ -1,11 +1,11 @@
 # Raspberry-Pi-Zero W 搭載プラレールについて
-去年、Raspberry-Pi の発売と同時に[初代プラレール](https://github.com/Kumapapa2012/Raspberry-Pi-Zero-on-PLA-RAIL)を作成。
+去年、Raspberry-Pi Zero の発売と同時に[初代プラレール](https://github.com/Kumapapa2012/Raspberry-Pi-Zero-on-PLA-RAIL)を作成。
 これは USB の　Web カメラ、Wifi Dongle などをつけるため、 USB ハブを接続していました。  
 
 しかし今年、Raspberry-Pi Zero W を運よく入手でき、これをプラレールに搭載しました。  
 Wifi-Dongle が不要になり、またRaspberry-pi Camera モジュールを使用することで、USB WebCam も不要になりました。  
 さらに最近は Zero-LiPo という Lipo バッテリーをRaspberry Pi Zero で使用するためのパーツも販売されており、これも使用しました。  
-その結果、なかなか完成度の高いプラレールができました。  
+その結果、かなりすっきりとした構造になりました。  
 ここでは、作成方法と、動かすためのコードを公開します。  
 ![](img/2017-08-15-21-32-52.png)
 
