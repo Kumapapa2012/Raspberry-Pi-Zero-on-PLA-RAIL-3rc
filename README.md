@@ -1,3 +1,15 @@
+# ※注意: 使用 Raspbian について
+こちらの内容は、Raspbian の最新イメージ(2017-08-16-raspbian-stretch-lite.img)では動作しません(uv4l がインストールできません)。
+これまで Debian8 ベースであったものが、最新版から、Debian9 ベースに変更されたためです。
+試す場合はお手数ですが、こちらから、7/15 バージョンもしくはそれ以前を入手して使用してください。
+
+Lite 版
+http://downloads.raspberrypi.org/raspbian_lite/images/
+
+通常 版
+http://downloads.raspberrypi.org/raspbian_lite/images/
+
+
 # Raspberry-Pi-Zero W 搭載プラレールについて
 去年、Raspberry-Pi Zero の発売と同時に[初代プラレール](https://github.com/Kumapapa2012/Raspberry-Pi-Zero-on-PLA-RAIL)を作成。
 これは USB の　Web カメラ、Wifi Dongle などをつけるため、 USB ハブを接続していました。  
@@ -165,10 +177,10 @@ Motion JPEG による動画配信を行います。 "MJPEG Streamer" よりも�
 
     $ curl http://www.linux-projects.org/listing/uv4l_repo/lrkey.asc | sudo apt-key add -  
     $ sudo -s  
-    \# echo "deb http://www.linux-projects.org/listing/uv4l_repo/raspbian/ jessie main" >> /etc/apt/sources.list  
-    \# apt update  
-    \# apt install uv4l-webrtc uv4l-raspicam-extras  
-    \# exit  
+    # echo "deb http://www.linux-projects.org/listing/uv4l_repo/raspbian/ jessie main" >> /etc/apt/sources.list  
+    # apt update  
+    # apt install uv4l-webrtc uv4l-raspicam-extras  
+    # exit  
 
 インストール後、uv4l サービスを停止します。  
 
