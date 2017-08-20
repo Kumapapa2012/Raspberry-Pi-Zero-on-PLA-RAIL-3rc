@@ -203,7 +203,7 @@ WebSocket サーバーとして動作し、ブラウザ上で双方向リアル�
 以下インストールします。
 
     $ sudo apt install python3 python3-rpi.gpio python-pip python3-pip  
-    $ pip install asyncio websockets
+    $ pip3 install asyncio websockets
 
 インストール後、以下のようにファイルを配置します。  
 
